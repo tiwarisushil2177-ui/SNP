@@ -33,37 +33,28 @@ class DashboardPage extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '$greeting,',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text('$greeting,',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white70)),
+                  Text(name,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
                 ],
               ),
             ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.search, color: Colors.white),
-                onPressed: () {
-                  showSearch(
-                    context: context,
-                    delegate: _GlobalSearchDelegate(),
-                  );
-                },
+                onPressed: () => showSearch(
+                    context: context, delegate: _GlobalSearchDelegate()),
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                icon: const Icon(Icons.notifications_outlined,
+                    color: Colors.white),
                 onPressed: () {},
               ),
               PopupMenuButton<String>(
@@ -80,13 +71,11 @@ class DashboardPage extends ConsumerWidget {
               ),
             ],
           ),
-          Sli                         verToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Text(
-                "Today's overview",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              child: Text("Today's overview",
+                  style: Theme.of(context).textTheme.titleMedium),
             ),
           ),
           SliverToBoxAdapter(
@@ -94,11 +83,23 @@ class DashboardPage extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  _StatCard(label: 'Hearings', value: '0', icon: Icons.gavel, color: AppColors.deepNavy),
+                  _StatCard(
+                      label: 'Hearings',
+                      value: '0',
+                      icon: Icons.gavel,
+                      color: AppColors.deepNavy),
                   const SizedBox(width: 10),
-                  _StatCard(label: 'Deadlines', value: '0', icon: Icons.flag_outlined, color: AppColors.saffron),
+                  _StatCard(
+                      label: 'Deadlines',
+                      value: '0',
+                      icon: Icons.flag_outlined,
+                      color: AppColors.saffron),
                   const SizedBox(width: 10),
-                  _StatCard(label: 'Pending', value: '0', icon: Icons.pending_actions, color: AppColors.info),
+                  _StatCard(
+                      label: 'Pending',
+                      value: '0',
+                      icon: Icons.pending_actions,
+                      color: AppColors.info),
                 ],
               ),
             ),
@@ -109,8 +110,11 @@ class DashboardPage extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Upcoming hearings', style: Theme.of(context).textTheme.titleMedium),
-                  TextButton(onPressed: () => context.go('/calendar'), child: const Text('See all')),
+                  Text('Upcoming hearings',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  TextButton(
+                      onPressed: () => context.go('/calendar'),
+                      child: const Text('See all')),
                 ],
               ),
             ),
@@ -123,23 +127,36 @@ class DashboardPage extends ConsumerWidget {
               onAction: () => context.go('/cases'),
             ),
           ),
-          SliverToBoxAdapter(
+          Sli                         verToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-              child: Text('Quick actions', style: Theme.of(context).textTheme.titleMedium),
+              child: Text('Quick actions',
+                  style: Theme.of(context).textTheme.titleMedium),
             ),
           ),
-          Sli                         verToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  _QuickAction(icon: Icons.add_box_outlined, label: 'New Case', onTap: () => context.go('/cases')),
-                  _QuickAction(icon: Icons.upload_file_outlined, label: 'Upload Doc', onTap: () => context.go('/documents')),
-                  _QuickAction(icon: Icons.person_add_outlined, label: 'Add Client', onTap: () => context.go('/clients')),
-                  _QuickAction(icon: Icons.receipt_outlined, label: 'Invoice', onTap: () => context.go('/billing')),
+                  _QuickAction(
+                      icon: Icons.add_box_outlined,
+                      label: 'New Case',
+                      onTap: () => context.go('/cases')),
+                  _QuickAction(
+                      icon: Icons.upload_file_outlined,
+                      label: 'Upload Doc',
+                      onTap: () => context.go('/documents')),
+                  _QuickAction(
+                      icon: Icons.person_add_outlined,
+                      label: 'Add Client',
+                      onTap: () => context.go('/clients')),
+                  _QuickAction(
+                      icon: Icons.receipt_outlined,
+                      label: 'Invoice',
+                      onTap: () => context.go('/billing')),
                 ],
               ),
             ),
@@ -152,7 +169,11 @@ class DashboardPage extends ConsumerWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value, required this.icon, required this.color});
+  const _StatCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
   final String label;
   final String value;
   final IconData icon;
@@ -172,8 +193,14 @@ class _StatCard extends StatelessWidget {
           children: [
             Icon(icon, size: 20, color: color),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-            Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
+            Text(label,
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary)),
           ],
         ),
       ),
@@ -182,7 +209,11 @@ class _StatCard extends StatelessWidget {
 }
 
 class _EmptyCard extends StatelessWidget {
-  const _EmptyCard({required this.icon, required this.message, required this.actionLabel, required this.onAction});
+  const _EmptyCard(
+      {required this.icon,
+      required this.message,
+      required this.actionLabel,
+      required this.onAction});
   final IconData icon;
   final String message;
   final String actionLabel;
@@ -203,7 +234,10 @@ class _EmptyCard extends StatelessWidget {
           children: [
             Icon(icon, size: 36, color: AppColors.textMuted),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+            Text(message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 14, color: AppColors.textSecondary)),
             const SizedBox(height: 12),
             TextButton(onPressed: onAction, child: Text(actionLabel)),
           ],
@@ -214,7 +248,8 @@ class _EmptyCard extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
+  const _QuickAction(
+      {required this.icon, required this.label, required this.onTap});
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -237,7 +272,11 @@ class _QuickAction extends StatelessWidget {
             children: [
               Icon(icon, size: 24, color: AppColors.deepNavy),
               const SizedBox(height: 6),
-              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary)),
             ],
           ),
         ),
@@ -260,7 +299,8 @@ class _GlobalSearchDelegate extends SearchDelegate {
 
   @override
   Widget? buildLeading(BuildContext context) {
-    return IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
+    return IconButton(
+        icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
   }
 
   @override
