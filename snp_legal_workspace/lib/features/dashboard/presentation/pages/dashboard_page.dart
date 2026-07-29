@@ -24,7 +24,6 @@ class DashboardPage extends ConsumerWidget {
         slivers: [
           SliverAppBar(
             expandedHeight: 120,
-            floating: false,
             pinned: true,
             backgroundColor: AppColors.deepNavy,
             flexibleSpace: FlexibleSpaceBar(
@@ -35,9 +34,7 @@ class DashboardPage extends ConsumerWidget {
                 children: [
                   Text('$greeting,',
                       style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white70)),
+                          fontSize: 12, color: Colors.white70)),
                   Text(name,
                       style: const TextStyle(
                           fontSize: 18,
@@ -71,13 +68,7 @@ class DashboardPage extends ConsumerWidget {
               ),
             ],
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-              child: Text("Today's overview",
-                  style: Theme.of(context).textTheme.titleMedium),
-            ),
-          ),
+          const _OverviewHeader(),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -127,7 +118,7 @@ class DashboardPage extends ConsumerWidget {
               onAction: () => context.go('/cases'),
             ),
           ),
-          Sli                         verToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
               child: Text('Quick actions',
@@ -163,6 +154,20 @@ class DashboardPage extends ConsumerWidget {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
+      ),
+    );
+  }
+}
+
+class _OverviewHeader extends StatelessWidget {
+  const _OverviewHeader();
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+        child: Text("Today's overview",
+            style: Theme.of(context).textTheme.titleMedium),
       ),
     );
   }
@@ -300,7 +305,8 @@ class _GlobalSearchDelegate extends SearchDelegate {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-        icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => close(context, null));
   }
 
   @override
