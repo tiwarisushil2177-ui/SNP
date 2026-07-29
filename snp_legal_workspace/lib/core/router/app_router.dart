@@ -6,6 +6,8 @@ import '../../features/auth/presentation/pages/create_workspace_page.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/cases/presentation/pages/cases_page.dart';
+import '../../features/cases/presentation/pages/create_case_page.dart';
+import '../../features/cases/presentation/pages/case_detail_page.dart';
 import '../../features/calendar/presentation/pages/calendar_page.dart';
 import '../../features/documents/presentation/pages/documents_page.dart';
 import '../../features/clients/presentation/pages/clients_page.dart';
@@ -47,7 +49,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/cnr-lookup',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const CnrLookupPage(),
+      ),
+      GoRoute(
+        path: '/cases/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CreateCasePage(),
+      ),
+      GoRoute(
+        path: '/cases/:caseId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['caseId']!;
+          return CaseDetailPage(caseId: id);
+        },
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
