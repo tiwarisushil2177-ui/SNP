@@ -3,11 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'core/security/app_lock_page.dart';
+import 'core/security/security_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Enforce portrait for the legal practice UX consistency on phones.
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -29,6 +30,27 @@ class SnpLegalApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final lock = ref.watch(appLockProvider);
+
+    if (lock.checking) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        home: const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (lock.lockEnabled && !lock.unlocked) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        home: AppLockPage(
+          onUnlocked: () => ref.read(appLockProvider.notifier).unlock(),
+        ),
+      );
+    }
 
     return MaterialApp.router(
       title: 'SNP Legal Workspace',
