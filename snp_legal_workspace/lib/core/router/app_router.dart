@@ -19,6 +19,12 @@ import '../../features/billing/presentation/pages/invoice_detail_page.dart';
 import '../../features/billing/presentation/pages/time_entries_page.dart';
 import '../../features/ai/presentation/pages/ai_tools_page.dart';
 import '../../features/court_sync/presentation/pages/cnr_lookup_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/templates/presentation/pages/templates_page.dart';
+import '../../features/intake/presentation/pages/client_intake_page.dart';
+import '../../features/clauses/presentation/pages/clauses_page.dart';
+import '../../features/deadlines/presentation/deadlines_page.dart';
+import '../../features/compliance/presentation/pages/compliance_page.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -35,11 +41,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuth = authState.isAuthenticated;
       final isLoading = authState.isLoading;
       final loc = state.matchedLocation;
-
       if (isLoading) return null;
-
       final isLoginRoute = loc == '/login' || loc == '/create-workspace';
-
       if (!isAuth && !isLoginRoute) return '/login';
       if (isAuth && isLoginRoute) return '/dashboard';
       return null;
@@ -62,8 +65,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/cases/:caseId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) =>
-            CaseDetailPage(caseId: state.pathParameters['caseId']!),
+        builder: (c, s) => CaseDetailPage(caseId: s.pathParameters['caseId']!),
       ),
       GoRoute(
         path: '/clients/new',
@@ -73,8 +75,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/clients/:clientId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) =>
-            ClientDetailPage(clientId: state.pathParameters['clientId']!),
+        builder: (c, s) =>
+            ClientDetailPage(clientId: s.pathParameters['clientId']!),
+      ),
+      GoRoute(
+        path: '/settings',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: '/templates',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const TemplatesPage(),
+      ),
+      GoRoute(
+        path: '/intake/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ClientIntakePage(),
+      ),
+      GoRoute(
+        path: '/clauses',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const ClausesPage(),
+      ),
+      GoRoute(
+        path: '/deadlines',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const DeadlinesPage(),
+      ),
+      GoRoute(
+        path: '/compliance',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const CompliancePage(),
       ),
       GoRoute(
         path: '/billing/time',
@@ -94,12 +126,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/billing/:invoiceId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) =>
-            InvoiceDetailPage(invoiceId: state.pathParameters['invoiceId']!),
+        builder: (c, s) =>
+            InvoiceDetailPage(invoiceId: s.pathParameters['invoiceId']!),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => MainShell(child: child),
+        builder: (c, s, child) => MainShell(child: child),
         routes: [
           GoRoute(
             path: '/dashboard',
