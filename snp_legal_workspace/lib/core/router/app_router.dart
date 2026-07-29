@@ -16,6 +16,8 @@ import '../../features/clients/presentation/pages/client_detail_page.dart';
 import '../../features/billing/presentation/pages/billing_page.dart';
 import '../../features/billing/presentation/pages/create_invoice_page.dart';
 import '../../features/billing/presentation/pages/invoice_detail_page.dart';
+import '../../features/billing/presentation/pages/time_entries_page.dart';
+import '../../features/ai/presentation/pages/ai_tools_page.dart';
 import '../../features/court_sync/presentation/pages/cnr_lookup_page.dart';
 import '../../shared/widgets/main_shell.dart';
 
@@ -43,57 +45,57 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
       GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginPage(),
-      ),
-      GoRoute(
-        path: '/create-workspace',
-        builder: (context, state) => const CreateWorkspacePage(),
-      ),
+          path: '/create-workspace',
+          builder: (_, __) => const CreateWorkspacePage()),
       GoRoute(
         path: '/cnr-lookup',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CnrLookupPage(),
+        builder: (_, __) => const CnrLookupPage(),
       ),
       GoRoute(
         path: '/cases/new',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CreateCasePage(),
+        builder: (_, __) => const CreateCasePage(),
       ),
       GoRoute(
         path: '/cases/:caseId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final id = state.pathParameters['caseId']!;
-          return CaseDetailPage(caseId: id);
-        },
+        builder: (context, state) =>
+            CaseDetailPage(caseId: state.pathParameters['caseId']!),
       ),
       GoRoute(
         path: '/clients/new',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CreateClientPage(),
+        builder: (_, __) => const CreateClientPage(),
       ),
       GoRoute(
         path: '/clients/:clientId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final id = state.pathParameters['clientId']!;
-          return ClientDetailPage(clientId: id);
-        },
+        builder: (context, state) =>
+            ClientDetailPage(clientId: state.pathParameters['clientId']!),
+      ),
+      GoRoute(
+        path: '/billing/time',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const TimeEntriesPage(),
+      ),
+      GoRoute(
+        path: '/ai',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const AiToolsPage(),
       ),
       GoRoute(
         path: '/billing/new',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CreateInvoicePage(),
+        builder: (_, __) => const CreateInvoicePage(),
       ),
       GoRoute(
         path: '/billing/:invoiceId',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) {
-          final id = state.pathParameters['invoiceId']!;
-          return InvoiceDetailPage(invoiceId: id);
-        },
+        builder: (context, state) =>
+            InvoiceDetailPage(invoiceId: state.pathParameters['invoiceId']!),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
@@ -101,39 +103,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/dashboard',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DashboardPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: DashboardPage()),
           ),
           GoRoute(
             path: '/cases',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CasesPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: CasesPage()),
           ),
           GoRoute(
             path: '/calendar',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CalendarPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: CalendarPage()),
           ),
           GoRoute(
             path: '/documents',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DocumentsPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: DocumentsPage()),
           ),
           GoRoute(
             path: '/clients',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ClientsPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: ClientsPage()),
           ),
           GoRoute(
             path: '/billing',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: BillingPage(),
-            ),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: BillingPage()),
           ),
         ],
       ),
