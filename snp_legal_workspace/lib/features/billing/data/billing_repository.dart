@@ -206,6 +206,28 @@ class BillingRepository {
     await _persistTime();
   }
 
+  Future<void> markTimeInvoiced(List<String> entryIds, String invoiceId) async {
+    await _ensureLoaded();
+    _time = _time.map((t) {
+      if (entryIds.contains(t.id)) {
+        return TimeEntry(
+          id: t.id,
+          caseId: t.caseId,
+          clientId: t.clientId,
+          description: t.description,
+          minutes: t.minutes,
+          hourlyRate: t.hourlyRate,
+          billable: t.billable,
+          invoiceId: invoiceId,
+          date: t.date,
+          createdAt: t.createdAt,
+        );
+      }
+      return t;
+    }).toList();
+    await _persistTime();
+  }
+
   Future<Map<String, double>> summary() async {
     final all = await listInvoices();
     double outstanding = 0;
