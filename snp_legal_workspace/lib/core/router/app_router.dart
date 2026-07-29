@@ -14,6 +14,8 @@ import '../../features/clients/presentation/pages/clients_page.dart';
 import '../../features/clients/presentation/pages/create_client_page.dart';
 import '../../features/clients/presentation/pages/client_detail_page.dart';
 import '../../features/billing/presentation/pages/billing_page.dart';
+import '../../features/billing/presentation/pages/create_invoice_page.dart';
+import '../../features/billing/presentation/pages/invoice_detail_page.dart';
 import '../../features/court_sync/presentation/pages/cnr_lookup_page.dart';
 import '../../shared/widgets/main_shell.dart';
 
@@ -78,6 +80,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['clientId']!;
           return ClientDetailPage(clientId: id);
+        },
+      ),
+      GoRoute(
+        path: '/billing/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CreateInvoicePage(),
+      ),
+      GoRoute(
+        path: '/billing/:invoiceId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['invoiceId']!;
+          return InvoiceDetailPage(invoiceId: id);
         },
       ),
       ShellRoute(
