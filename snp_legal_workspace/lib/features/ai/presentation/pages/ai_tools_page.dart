@@ -29,6 +29,68 @@ class _AiToolsPageState extends ConsumerState<AiToolsPage> {
     super.dispose();
   }
 
+  Future<void> _openCloudSettings() async {
+    final keyCtrl = TextEditingController();
+    final urlCtrl =
+        TextEditingController(text: 'https://api.openai.com/v1');
+    var enabled = ref.read(aiAssistProvider).cloudConfigured;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: const Text('Cloud LLM settings'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'API key stays in secure storage. Prefer a backend proxy. '
+                  'Do not send privileged data without consent.',
+                  style: TextStyle(fontSize: 12),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Enable cloud LLM'),
+                  value: enabled,
+                  onChanged: (v) => setLocal(() => enabled = v),
+                ),
+                TextField(
+                  controller: keyCtrl,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'API key'),
+                ),
+                TextField(
+                  controller: urlCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Base URL (OpenAI-compatible)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
+            FilledButton(
+              onPressed: () async {
+                await ref.read(aiAssistProvider.notifier).saveCloudSettings(
+                      enabled: enabled,
+                      apiKey: keyCtrl.text.trim().isEmpty
+                          ? null
+                          : keyCtrl.text.trim(),
+                      baseUrl: urlCtrl.text.trim(),
+                    );
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _run() {
     ref.read(aiAssistProvider.notifier).generate(
           tool: _tool,
@@ -45,78 +107,75 @@ class _AiToolsPageState extends ConsumerState<AiToolsPage> {
 
     return Scaffold(
       backgroundColor: AppColors.ivory,
-      appBar: AppBar(title: const Text('AI Assist')),
+      appBar: AppBar(
+        title: const Text('AI Assist'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _openCloudSettings,
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.deepNavy.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Text(
-              'Privacy: templates run on this device. Nothing is sent to '
-              'external AI services. Do not paste privileged client material '
-              'unless you intend it to appear in the draft.',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
+          SegmentedButton<AiMode>(
+            segments: const [
+              ButtonSegment(value: AiMode.onDevice, label: Text('On-device')),
+              ButtonSegment(value: AiMode.cloud, label: Text('Cloud')),
+            ],
+            selected: {state.mode},
+            onSelectionChanged: (s) =>
+                ref.read(aiAssistProvider.notifier).setMode(s.first),
           ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: AiToolType.values.map((t) {
-              final selected = _tool == t;
               return ChoiceChip(
                 label: Text(t.title),
-                selected: selected,
+                selected: _tool == t,
                 onSelected: (_) => setState(() => _tool = t),
-                selectedColor: AppColors.saffron.withOpacity(0.25),
               );
             }).toList(),
           ),
-          const SizedBox(height: 8),
-          Text(_tool.description,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 16),
           TextField(
-            controller: _titleCtrl,
-            decoration:
-                const InputDecoration(labelText: 'Matter / case title'),
-          ),
-          const SizedBox(height: 8),
+              controller: _titleCtrl,
+              decoration:
+                  const InputDecoration(labelText: 'Matter / case title')),
           TextField(
-            controller: _courtCtrl,
-            decoration: const InputDecoration(labelText: 'Court'),
-          ),
-          const SizedBox(height: 8),
+              controller: _courtCtrl,
+              decoration: const InputDecoration(labelText: 'Court')),
           TextField(
-            controller: _stageCtrl,
-            decoration: const InputDecoration(labelText: 'Stage'),
-          ),
-          const SizedBox(height: 8),
+              controller: _stageCtrl,
+              decoration: const InputDecoration(labelText: 'Stage')),
           TextField(
             controller: _notesCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Optional notes (you choose what to include)',
-              alignLabelWithHint: true,
-            ),
+            decoration: const InputDecoration(labelText: 'Notes'),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: _run,
+            onPressed: state.isGenerating ? null : _run,
             icon: const Icon(Icons.auto_awesome),
-            label: const Text('Generate on-device'),
+            label: Text(state.mode == AiMode.cloud
+                ? 'Generate (cloud)'
+                : 'Generate on-device'),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.deepNavy,
               minimumSize: const Size.fromHeight(48),
             ),
           ),
+          if (state.error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(state.error!,
+                  style: const TextStyle(color: Colors.red)),
+            ),
           if (state.lastResult != null) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Text(state.lastResult!.tool.title,
@@ -127,27 +186,11 @@ class _AiToolsPageState extends ConsumerState<AiToolsPage> {
                   onPressed: () async {
                     await Clipboard.setData(
                         ClipboardData(text: state.lastResult!.content));
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Copied to clipboard')),
-                    );
                   },
                 ),
               ],
             ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: SelectableText(
-                state.lastResult!.content,
-                style: const TextStyle(fontSize: 13, height: 1.4),
-              ),
-            ),
+            SelectableText(state.lastResult!.content),
           ],
         ],
       ),
