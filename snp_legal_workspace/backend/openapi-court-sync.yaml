@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: SNP Legal Workspace — Court Sync API
+  version: 1.0.0
+  description: |
+    Court synchronization subset. Full API: openapi.yaml (python3 gen_openapi.py).
+    Mobile app never scrapes eCourts; this service is the only gateway.
+servers:
+  - url: http://localhost:8080
+  - url: https://api.snplegal.workspace
+security:
+  - bearerAuth: []
+paths:
+  /court-sync/cnr/{cnr}:
+    get:
+      tags: [CourtSync]
+      operationId: lookupByCnr
+      summary: Look up case status by CNR
+      parameters:
+        - name: cnr
+          in: path
+          required: true
+          schema:
+            type: string
+            example: DLCT010012342024
+      responses:
+        '200':
+          description: Lookup result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtCaseStatusResponse'
+        '400':
+          description: Invalid CNR format
+        '404':
+          description: Not found
+        '422':
+          description: Court not onboarded for auto-sync
+        '401':
+          description: Unauthorized
+        '429':
+          description: Rate limited
+        '502':
+          description: Upstream failure
+  /court-sync/refresh:
+    post:
+      tags: [CourtSync]
+      operationId: refreshCourtStatus
+      summary: Refresh remote status (does not mutate local case)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cnr]
+              properties:
+                cnr:
+                  type: string
+                case_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Fresh snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtCaseStatusResponse'
+        '404':
+          description: Not found
+        '422':
+          description: Unsupported court
+  /court-sync/supported-courts:
+    get:
+      tags: [CourtSync]
+      operationId: listSupportedCourts
+      responses:
+        '200':
+          description: Onboarded courts
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [courts]
+                properties:
+                  courts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportedCourt'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+    CourtSource:
+      type: string
+      enum: [ecourts, njdg, high_court, unknown]
+    CourtHearingInfo:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+          format: date
+        purpose:
+          type: string
+        court_room:
+          type: string
+        judge_name:
+          type: string
+        business_date:
+          type: string
+          format: date
+    CourtCaseStatusResponse:
+      type: object
+      required: [found, fetched_at]
+      properties:
+        found:
+          type: boolean
+        cnr:
+          type: string
+        source:
+          $ref: '#/components/schemas/CourtSource'
+        fetched_at:
+          type: string
+          format: date-time
+        case_type:
+          type: string
+        filing_number:
+          type: string
+        registration_number:
+          type: string
+        petitioner:
+          type: string
+        respondent:
+          type: string
+        stage:
+          type: string
+        court_name:
+          type: string
+        district:
+          type: string
+        state:
+          type: string
+        next_hearing:
+          $ref: '#/components/schemas/CourtHearingInfo'
+        message:
+          type: string
+    SupportedCourt:
+      type: object
+      required: [id, name, state, source]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+        source:
+          $ref: '#/components/schemas/CourtSource'
+        high_court_code:
+          type: string

@@ -1,0 +1,14 @@
+{
+  "name": "snp-court-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SNP Legal Workspace court-sync gateway (reference implementation)",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
