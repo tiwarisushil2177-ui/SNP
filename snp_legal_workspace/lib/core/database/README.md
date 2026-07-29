@@ -1,13 +1,12 @@
 # Database layer
 
-## Current (v1)
-- JSON file stores via feature repositories + `DatabaseService`
-- Path: app documents / `snp_data/*.json`
-- `migrateLegacyJsonIfNeeded()` copies older flat files
+## Active path
+- `DatabaseService` + `EntityStore` — JSON under Documents/snp_data/
+- Migrate feature repos to EntityStore incrementally
 
-## Isar migration
-1. Schemas live in `isar_collections.dart`
-2. Run: `dart run build_runner build --delete-conflicting-outputs`
-3. Uncomment `part` + `openSnpIsar` and inject Isar into repositories
+## Isar
+1. Uncomment part file in isar_collections.dart
+2. `dart run build_runner build --delete-conflicting-outputs`
+3. Wire openSnpIsar into repositories
 
-Until generated code exists, JSON remains source of truth.
+JSON remains runtime store until codegen succeeds locally. CI unit tests do not need Isar natives.
