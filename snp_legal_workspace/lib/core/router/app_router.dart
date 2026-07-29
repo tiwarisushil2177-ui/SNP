@@ -11,6 +11,8 @@ import '../../features/cases/presentation/pages/case_detail_page.dart';
 import '../../features/calendar/presentation/pages/calendar_page.dart';
 import '../../features/documents/presentation/pages/documents_page.dart';
 import '../../features/clients/presentation/pages/clients_page.dart';
+import '../../features/clients/presentation/pages/create_client_page.dart';
+import '../../features/clients/presentation/pages/client_detail_page.dart';
 import '../../features/billing/presentation/pages/billing_page.dart';
 import '../../features/court_sync/presentation/pages/cnr_lookup_page.dart';
 import '../../shared/widgets/main_shell.dart';
@@ -63,6 +65,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['caseId']!;
           return CaseDetailPage(caseId: id);
+        },
+      ),
+      GoRoute(
+        path: '/clients/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CreateClientPage(),
+      ),
+      GoRoute(
+        path: '/clients/:clientId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['clientId']!;
+          return ClientDetailPage(clientId: id);
         },
       ),
       ShellRoute(
