@@ -1,0 +1,15 @@
+Add near top of server.mjs:
+  import { makeCompliance } from './compliance_handlers.mjs';
+
+Inside request handler, before /health (after method/pathname are set):
+  if (!globalThis.__snpCompliance) {
+    globalThis.__snpCompliance = makeCompliance({
+      filePath, readJson, writeJson, userData, saveUserData,
+      usersDb, saveUsers, json, requireAuth, audit,
+    });
+  }
+  if (await globalThis.__snpCompliance.handle(req, res, method, pathname, readBody)) {
+    return;
+  }
+
+audit(userId, action, meta, req) should accept optional req for ip/user_agent.
