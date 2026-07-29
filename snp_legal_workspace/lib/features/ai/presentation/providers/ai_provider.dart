@@ -70,10 +70,15 @@ class AiAssistNotifier extends StateNotifier<AiAssistState> {
     required bool enabled,
     String? apiKey,
     String? baseUrl,
+    String? proxyBearer,
+    String? proxyUrl,
+    bool? useProxy,
   }) async {
     await _cloud.setEnabled(enabled);
+    if (useProxy != null) await _cloud.setUseProxy(useProxy);
+    if (proxyBearer != null) await _cloud.setProxyBearer(proxyBearer);
+    if (proxyUrl != null) await _cloud.setProxyUrl(proxyUrl);
     if (apiKey != null) await _cloud.setApiKey(apiKey);
-    if (baseUrl != null) await _cloud.setBaseUrl(baseUrl);
     await _refreshCloudFlag();
   }
 
