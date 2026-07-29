@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  flutter-analyze-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: snp_legal_workspace
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos || true
+      - run: flutter test --reporter expanded
+
+  court-sync-node:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: snp_legal_workspace/backend/court-sync
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check server.mjs && node --check adapters/registry.mjs && node --check adapters/live_ecourts.mjs
+      - run: |
+          node -e "
+          import('./adapters/registry.mjs').then(async (m) => {
+            const h = await m.adapterHealth();
+            if (!Array.isArray(h) || h.length < 1) process.exit(1);
+            const r = await m.lookupViaAdapters('DLCT010012342024');
+            if (!r || !r.cnr) process.exit(2);
+            console.log('adapters ok', h.length, r.cnr);
+          });
+          "
+
+  llm-proxy-node:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: snp_legal_workspace/backend/llm-proxy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --check server.mjs

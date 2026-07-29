@@ -1,6 +1,11 @@
 import { DelhiDistrictAdapter } from './delhi_district.mjs';
+import { LiveEcourtsAdapter, NjdgAdapter } from './live_ecourts.mjs';
 
-const adapters = [new DelhiDistrictAdapter()];
+const adapters = [
+  new DelhiDistrictAdapter(),
+  new LiveEcourtsAdapter(),
+  new NjdgAdapter(),
+];
 
 export function listAdapters() {
   return adapters.map((a) => ({
@@ -10,18 +15,19 @@ export function listAdapters() {
   }));
 }
 
-export function getAdapterForCnr(cnr) {
-  const c = String(cnr || '').toUpperCase();
-  if (c.startsWith('DLCT') || c.startsWith('DL')) {
-    return adapters.find((a) => a.courtId === 'DLCT01') || null;
-  }
-  return null;
-}
-
 export async function lookupViaAdapters(cnr) {
-  const adapter = getAdapterForCnr(cnr);
-  if (!adapter) return null;
-  return adapter.lookupByCnr(cnr);
+  for (const a of adapters) {
+    if (!a.isProductionReady && a.courtId !== 'DLCT01') continue;
+    try {
+      const hit = await a.lookupByCnr(cnr);
+      if (hit) return hit;
+    } catch (e) {
+      console.error(`[adapter ${a.courtId}]`, e.message || e);
+    }
+  }
+  const delhi = adapters.find((a) => a.courtId === 'DLCT01');
+  if (delhi) return delhi.lookupByCnr(cnr);
+  return null;
 }
 
 export async function adapterHealth() {
