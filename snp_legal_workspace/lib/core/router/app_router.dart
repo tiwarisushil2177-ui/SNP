@@ -10,6 +10,7 @@ import '../../features/calendar/presentation/pages/calendar_page.dart';
 import '../../features/documents/presentation/pages/documents_page.dart';
 import '../../features/clients/presentation/pages/clients_page.dart';
 import '../../features/billing/presentation/pages/billing_page.dart';
+import '../../features/court_sync/presentation/pages/cnr_lookup_page.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -43,6 +44,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/create-workspace',
         builder: (context, state) => const CreateWorkspacePage(),
+      ),
+      GoRoute(
+        path: '/cnr-lookup',
+        builder: (context, state) => const CnrLookupPage(),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
