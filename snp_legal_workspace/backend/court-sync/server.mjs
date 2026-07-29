@@ -1,24 +1,18 @@
 /**
- * SNP Legal Workspace — Court Sync gateway (dev / reference implementation)
- *
- * Zero external dependencies (Node 18+ http module only).
- *
- * Production must:
- *  - Authenticate Bearer JWTs
- *  - Rate-limit per advocate
- *  - Talk to eCourts / NJDG / High Court adapters server-side only
- *  - Roll out supported courts incrementally
- *
- * Mobile clients call these endpoints — they never scrape court portals.
- *
- * Run:  node server.mjs
- * Port: process.env.PORT || 8080
+ * SNP Legal Workspace — Court Sync gateway
+ * Mobile clients never scrape eCourts; adapters run server-side only.
+ * Run: node server.mjs
  */
-
 import http from 'node:http';
 import { URL } from 'node:url';
+import {
+  lookupViaAdapters,
+  listAdapters,
+  adapterHealth,
+} from './adapters/registry.mjs';
 
 const PORT = Number(process.env.PORT || 8080);
+const CNR_RE = /^[A-Z0-9]{16}$/;
 
 const SUPPORTED_COURTS = [
   {
@@ -42,12 +36,8 @@ const SUPPORTED_COURTS = [
   },
 ];
 
-const CNR_RE = /^[A-Z0-9]{16}$/;
-
 function normalizeCnr(raw) {
-  return String(raw || '')
-    .replace(/[\s-]/g, '')
-    .toUpperCase();
+  return String(raw || '').replace(/[\s-]/g, '').toUpperCase();
 }
 
 function json(res, status, body) {
@@ -66,49 +56,34 @@ function requireAuth(req, res) {
     json(res, 401, { message: 'Unauthorized', code: 'unauthorized' });
     return false;
   }
-  // Production: verify JWT signature, expiry, and advocate subject.
   return true;
 }
 
-function isSupportedCnr(cnr) {
-  return cnr.startsWith('DL') || cnr.startsWith('MH');
-}
-
 function fetchMockStatus(cnr) {
-  if (!isSupportedCnr(cnr)) {
+  if (!(cnr.startsWith('DL') || cnr.startsWith('MH'))) {
     return { unsupported: true };
   }
-  if (cnr.endsWith('000000000000')) {
-    return { found: false };
-  }
-
+  if (cnr.endsWith('000000000000')) return { found: false };
   const next = new Date();
   next.setDate(next.getDate() + 14);
-
   return {
     found: true,
     cnr,
-    source: cnr.startsWith('DL') && cnr.includes('HC') ? 'high_court' : 'ecourts',
+    source: 'mock',
     fetched_at: new Date().toISOString(),
     case_type: 'Civil',
-    filing_number: 'F-DEMO-001',
-    registration_number: 'R-DEMO-001',
     petitioner: 'Demo Petitioner',
     respondent: 'Demo Respondent',
     stage: 'Hearing',
     court_name: cnr.startsWith('DL')
       ? 'District Court, Delhi'
       : 'City Civil Court, Mumbai',
-    district: cnr.startsWith('DL') ? 'Central' : 'Mumbai',
-    state: cnr.startsWith('DL') ? 'Delhi' : 'Maharashtra',
     next_hearing: {
       date: next.toISOString().slice(0, 10),
       purpose: 'Arguments',
       court_room: '12',
-      judge_name: null,
-      business_date: null,
     },
-    message: 'Demo snapshot — replace with live court gateway in production.',
+    message: 'Fallback mock — prefer adapter result when available.',
   };
 }
 
@@ -121,6 +96,14 @@ async function readBody(req) {
   } catch {
     return null;
   }
+}
+
+async function resolveCnr(cnr) {
+  const adapted = await lookupViaAdapters(cnr);
+  if (adapted) {
+    return { found: true, unsupported: false, ...adapted };
+  }
+  return fetchMockStatus(cnr);
 }
 
 const server = http.createServer(async (req, res) => {
@@ -138,14 +121,20 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/health') {
-    json(res, 200, { status: 'ok', service: 'snp-court-sync' });
+    const adapters = await adapterHealth();
+    json(res, 200, {
+      status: 'ok',
+      service: 'snp-court-sync',
+      adapters,
+      registry: listAdapters(),
+    });
     return;
   }
 
   if (!requireAuth(req, res)) return;
 
   if (method === 'GET' && pathname === '/court-sync/supported-courts') {
-    json(res, 200, { courts: SUPPORTED_COURTS });
+    json(res, 200, { courts: SUPPORTED_COURTS, adapters: listAdapters() });
     return;
   }
 
@@ -159,7 +148,7 @@ const server = http.createServer(async (req, res) => {
       });
       return;
     }
-    const result = fetchMockStatus(cnr);
+    const result = await resolveCnr(cnr);
     if (result.unsupported) {
       json(res, 422, {
         message:
@@ -168,7 +157,7 @@ const server = http.createServer(async (req, res) => {
       });
       return;
     }
-    if (!result.found) {
+    if (result.found === false) {
       json(res, 404, { message: 'No case found for this CNR.', code: 'not_found' });
       return;
     }
@@ -190,7 +179,7 @@ const server = http.createServer(async (req, res) => {
       });
       return;
     }
-    const result = fetchMockStatus(cnr);
+    const result = await resolveCnr(cnr);
     if (result.unsupported) {
       json(res, 422, {
         message:
@@ -199,7 +188,7 @@ const server = http.createServer(async (req, res) => {
       });
       return;
     }
-    if (!result.found) {
+    if (result.found === false) {
       json(res, 404, { message: 'Case not found.', code: 'not_found' });
       return;
     }
